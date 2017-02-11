@@ -13,9 +13,10 @@ vector<PIEZA> set_available_pzas(NODE &father, vector<PIEZA> &all_pzas);
 double AreaToPack(NODE node, vector <PIEZA> pzas);
 
 //pza holds all non-placed pieces on the branch we are exploring.
+// (proyeccion)
 double Construct_Solution(const char *bin_name, vector <PIEZA> pzas, double level,double &A_bin, double &Amax)
 {
-    vector<NODE> bin_sol;
+    vector<NODE> bin_sol; //(incluir esto también en la mejor solución)
     vector<NODE> current_bin;//Vector of size btype_size for each type of bin, at each level.
     //Reads type of bin in file.
     int bsizes = 0;

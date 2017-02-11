@@ -8,7 +8,7 @@
 //==========================================================
 
 #include "classes_BPGC_HetBins.h"
-#include <mach-o/dyld.h>	/* _NSGetExecutablePath */
+//#include <mach-o/dyld.h>	/* _NSGetExecutablePath */
 
 //Declaración de funciones necesarias
 vector<PIEZA> read_pieces(char *name);
@@ -18,7 +18,9 @@ void PrintTree(char *instance_name, TREE &bs_sol, double runtime);
 
 #define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
 
-
+// dos argumentos
+// el archivo de los Beans
+//
 int main(int argc, const char * argv[]) {
     
 //    char path[1024];

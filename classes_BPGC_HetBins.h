@@ -3,16 +3,21 @@
 //##########     Y ESTRUCTURAS    ##############
 //##############################################
 #define _CRT_SECURE_NO_WARNINGS//I think this is only necessary in Windows. 
-#include <stdio.h>
+//#include <stdio.h>
 #include <time.h>
 #include <iostream>
 #include <vector>
-#include <string>
+//#include <string>
 #include <list>
-#include <math.h>
+//#include <math.h>
 #include <fstream>
 #include <assert.h>
 #include <algorithm>
+
+#include <cstring>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
 //Define constants
 #define GRANDE 99999999
