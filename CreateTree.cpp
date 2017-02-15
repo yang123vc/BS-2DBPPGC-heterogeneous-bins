@@ -1,8 +1,20 @@
+#include <stddef.h>
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <iterator>
+#include <list>
+#include <vector>
+#include <tuple>
+
 #include "classes_BPGC_HetBins.h"
+
 vector<PIEZA>
 set_available_pzas (NODE &father, vector<PIEZA> &all_pzas);
+
 bool
 StoppingCriteria (list<NODE>::iterator &father, list<NODE> &tree);
+
 void
 LastBinRefinement (list<NODE> &BS_tree);
 
@@ -63,19 +75,26 @@ TREE::build_solution (const char *bin_filename, vector<PIEZA> &pzas)
 	  continue;
 	}
 
-      //=====================================
-      //Global evaluation at the end of each level, and for nodes that still have pieces to place.
+      // =======================================================================
+      // Global evaluation at the end of each level, and for nodes that still
+      // have pieces to place.
+      //
+
       list<NODE>::iterator next_father;
       next_father = father;
       ++next_father; //next father should now point to the next element in the tree after father.
       if (next_father->get_level () != father->get_level ()) //We are at the end of a level.
 	{
-	  //Renumber nodes ID so we have no duplicates ID's when deleting nodes in global evaluation
+	  // Renumber nodes ID so we have no duplicates ID's when deleting nodes
+	  // in global evaluation
+
 	  int level = next_father->get_level ();
 	  list<NODE>::iterator node_level;
 	  node_level = next_father;
 	  int id = level * 100;
-	  //Renumber nodes so we do not get duplicates from different branches.
+
+	  // Renumber nodes so we do not get duplicates from different branches.
+	  //
 	  for (node_level = next_father; node_level != BS_tree.end ();
 	      node_level++)
 	    {
@@ -91,7 +110,7 @@ TREE::build_solution (const char *bin_filename, vector<PIEZA> &pzas)
 	      count++;
 	    }
 	}
-      //===========================================
+      //========================================================================
       ++father;
     }
   LastBinRefinement (BS_tree);
@@ -163,33 +182,58 @@ TREE::local_eval (vector<NODE> &children, NODE &node, int types, double &Amax)
 //Function that decides if a node enters the tree or not based on global evaluation
 //It will keep the best beta in the BS_tree.
 //double ConsSol(const char *argv,vector<PIEZA> item, unsigned long &size);//item pass by copy since I don't want to modify its contents ( this heuristic will place items in bins, and I don't want the pieces to be modified )
+
 void
-KeepBestNodes (NODE &node_eval, vector<GE_COMP> &best_of, vector<int> &keep_id,
-	       vector<int> &no_pzas, int b);
+KeepBestNodes (NODE &, vector<GE_COMP> &, vector<int> &, vector<int> &, int);
+
 double
-Construct_Solution (const char *bin_name, vector<PIEZA> pzas, double l,
-		    double &Abin, double &Amax);
+Construct_Solution (const char *, vector<PIEZA>, double, double &, double &,
+		    double &, vector<NODE> &);
 
 void
 TREE::global_eval (const char *bin_filename, vector<PIEZA> &item)
 {
 
-  list<NODE>::iterator node_eval; //node_eval: pointer to the node we are evaluating
-  list<NODE>::iterator ini_level; //ini_level: pointer to initial node on level, to know the limits to which make comparisons.
+  // node_eval: pointer to the node we are evaluating
+  //
+  list<NODE>::iterator node_eval;
+
+  // ini_level: pointer to initial node on level, to know the limits to which
+  // make comparisons.
+  //
+  list<NODE>::iterator ini_level;
+
   node_eval = BS_tree.end ();
+  --node_eval; // node_eval points to the last element on the tree.
+
   ini_level = BS_tree.end ();
-  --ini_level; //ini_level points to the last element on the tree (that corresponds to a limit on the level).
-  --node_eval;    //node_eval points to the last element on the tree.
+  --ini_level; // ini_level points to the last element on the tree (that corresponds to a limit on the level).
+
   int last_level = node_eval->get_level ();
-  double of = 0;    //Virtual objective function when following that branch.
-  vector<GE_COMP> best_of; //vector of best values of the objective function after global eval.
-  vector<int> keep_id;    //node id's that stay after global evaluation
+
+  // virtual objective function when following that branch.
+  //
+  double of = 0;
+
+  // the estimated solution following that branch
+  //
+  vector<NODE> bin_sol;
+
+  // vector of best values of the objective function after global eval.
+  //
+  vector<GE_COMP> best_of;
+
+  // node id's that stay after global evaluation
+  //
+  vector<int> keep_id;
+
   vector<int> no_pzas_disp;
   double Amax = item[0].getArea ();
   while (node_eval->get_level () == last_level) //Global evaluation done through all elements in a level.
     {
       int id = node_eval->getID ();
       cout << "\nNode: " << node_eval->getID ();
+
 //            int id =  node_eval->getID();
 //            cout<<" Predecessor: "<<(node_eval->get_Pred())->getID()<<"  "<<node_eval->getSize()<<"\n";
 //            cout<<"Pieces: ";
@@ -211,46 +255,75 @@ TREE::global_eval (const char *bin_filename, vector<PIEZA> &item)
       double level = 0;
       double AreaPz = 0;
       double AreaBin = 0;
+
       //Calculate Total Area of Pieces
       //======================================
       for (int i = 0; i < item.size (); i++)
 	AreaPz = AreaPz + item[i].getArea ();
       //======================================
+
       while (node.get_Pred () != NULL)
 	{
 	  //===========================================
-	  //Caluclate Total Area of Bins
+	  // calculate Total Area of Bins
 	  //===========================================
 	  AreaBin = AreaBin + node.getW () * node.getL ();
 	  level++;
 	  //============================================
 	  node = *node.get_Pred ();
 	}
+
       //======================================================
       if (!pzas_avail.empty ())
 	{
-	  // proyeccion
+	  // estimate solution from this node
 	  //
-	  of = Construct_Solution (bin_filename, pzas_avail, level, AreaBin,
-				   Amax);
+	  Construct_Solution (bin_filename, pzas_avail, level, AreaBin, Amax,
+			      of, bin_sol);
 	  of = AreaPz / of;
 	  node_eval->set_globaleval (of);
 
-	  // apuntar aquí al mejor nodo de todos (basado en el resultado de la global evaluation)
+	  // setting the best global solution
 	  //
+	  if (best_global_evaluation < of)
+	    {
+	      best_global_evaluation = of;
+	      best_current_solution.clear();
 
-	  KeepBestNodes (*node_eval, best_of, keep_id, no_pzas_disp, beta); //Modify best_of and keep_id so it stores the id's of the nodes to keep.
+	      best_estimated_solution.clear();
+	      for(std::vector<NODE>::iterator it = bin_sol.begin(),
+		  end = bin_sol.end(); it != end; ++it) {
+		  best_estimated_solution.push_front(*it);
+	      }
+
+	      node = *node_eval;
+	      best_current_solution.clear();
+	      while (node.get_Pred () != NULL)
+	      	{
+		  best_current_solution.push_front(node);
+	      	  node = *node.get_Pred ();
+	      	}
+	    }
+
+	  // modify best_of and keep_id so it stores the id's of the nodes to
+	  // keep
+	  //
+	  KeepBestNodes (*node_eval, best_of, keep_id, no_pzas_disp, beta);
 	}
       cout << "\tGE Value: " << node_eval->get_globaleval () << "\n";
       --node_eval;        //Next node to perform global eval. (previous in tree)
     }
-  //Delete nodes with id not in Keep_id
+
+  // delete nodes with id not in Keep_id
+  //
   while (ini_level->getID () != node_eval->getID ())
     {
       if (find (keep_id.begin (), keep_id.end (), ini_level->getID ())
 	  == keep_id.end ())
 	{
-	  //ini_level points to a node that needs to be eliminated (if it is not a closed node).
+	  // ini_level points to a node that needs to be eliminated (if it is
+	  // not a closed node)
+	  //
 	  if (ini_level->getOpen ())          //!ini_level->getIDdisp().empty())
 	    {
 	      del_node (ini_level);
@@ -259,16 +332,17 @@ TREE::global_eval (const char *bin_filename, vector<PIEZA> &item)
 	}
       ini_level--;
     }
+
   cout << "Nodes kept: ";
   for (int i = 0; i < keep_id.size (); i++)
     cout << keep_id[i] << " ";
   cout << "\n";
-
 }
 
 ////=====================================================================
 ////Funciones que ya no pertenecen a la clase pero las necesitamos.
 ////=====================================================================
+
 vector<PIEZA>
 set_available_pzas (NODE &father, vector<PIEZA> &all_pzas)
 {
