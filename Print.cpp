@@ -14,7 +14,7 @@ dibujar_nodes (vector<NODE> &bins, char *instance, char *name, double t,
 
 void
 print_best_solution (
-    std::tuple<list<NODE> &, list<NODE> &, double &> &best_solution)
+    const std::tuple<list<NODE> &, list<NODE> &, double &> &best_solution)
 {
   //
   // best global evaluation

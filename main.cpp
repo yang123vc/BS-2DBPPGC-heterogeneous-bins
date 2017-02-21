@@ -23,6 +23,9 @@ void
 PrintSolution (char *instance_name, TREE &bs_sol, double runtime, double &A);
 
 void
+print_best_solution (const std::tuple<list<NODE> &, list<NODE> &, double &> &);
+
+void
 PrintTree (char *instance_name, TREE &bs_sol, double runtime);
 
 // dos argumentos el archivo de los Beans
@@ -80,6 +83,7 @@ main (int argc, const char * argv[])
       //===================================================
       PrintSolution (instance_name, bs_sol, runtime, AreaPz);
 //    PrintTree(instance_name,bs_sol, runtime);
+      print_best_solution(bs_sol.getBestSolution());
       //===================================================
 
       //Identify solution node

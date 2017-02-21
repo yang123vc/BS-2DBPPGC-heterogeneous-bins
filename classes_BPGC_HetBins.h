@@ -379,7 +379,7 @@ public:
 
   // return the best solution
   //
-  const std::tuple<list<NODE>, list<NODE>, double>&
+  inline const std::tuple<list<NODE> &, list<NODE> &, double &>&
   getBestSolution () const
   {
     return best_solution;
