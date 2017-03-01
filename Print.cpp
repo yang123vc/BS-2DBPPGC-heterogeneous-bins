@@ -127,12 +127,10 @@ PrintSolution (char *instance_name, TREE &bs_sol, double runtime,
 	  reverse (branch_sol.begin (), branch_sol.end ());
 	  char name[200];
 	  sprintf (name, "SOL");
-	  dibujar_nodes (branch_sol, instance_name, name, runtime, 1);
-
+	  dibujar_nodes (branch_sol, name, instance_name, runtime, 1);
 	}
       it_child--;
     }
-
 }
 
 void
