@@ -4,7 +4,6 @@
 #include <iostream>
 #include <iterator>
 #include <list>
-#include <vector>
 #include <tuple>
 
 #include "classes_BPGC_HetBins.h"
@@ -288,21 +287,21 @@ TREE::global_eval (const char *bin_filename, vector<PIEZA> &item)
 	  if (best_global_evaluation < of)
 	    {
 	      best_global_evaluation = of;
-	      best_current_solution.clear();
+	      best_global_level =  node_eval->get_level();
 
-	      best_estimated_solution.clear();
-	      for(std::vector<NODE>::iterator it = bin_sol.begin(),
-		  end = bin_sol.end(); it != end; ++it) {
-		  best_estimated_solution.push_front(*it);
-	      }
+	      // add current solution
+	      //
+	      best_global_branch.clear();
+	      best_global_branch = bin_sol;
 
+	      // add estimated solution
+	      //
 	      node = *node_eval;
-	      best_current_solution.clear();
 	      while (node.get_Pred () != NULL)
-	      	{
-		  best_current_solution.push_front(node);
-	      	  node = *node.get_Pred ();
-	      	}
+		{
+		  best_global_branch.push_back(node);
+		  node = *node.get_Pred ();
+		}
 	    }
 
 	  // modify best_of and keep_id so it stores the id's of the nodes to

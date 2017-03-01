@@ -1,5 +1,5 @@
 #include <string>
-#include <tuple>
+#include <utility>
 
 //##############################################
 //########## DEFINICION DE CLASES ##############
@@ -308,7 +308,7 @@ public:
   void
   update_pzas_disp (int ID);
   vector<int>
-  get_IDdisp ();
+  get_IDdisp () const;
   NODE *
   get_Pred ();
   void
@@ -335,28 +335,28 @@ private:
   // setting up the best global solution
   //
 
-  // the list of computed nodes in the best solution
+  // the branch of the best solution
   //
-  list<NODE> best_current_solution;
-
-  // the list of estimated nodes in the best solution
-  //
-  list<NODE> best_estimated_solution;
+  vector<NODE> best_global_branch;
 
   // the global evaluation of the best solution
   //
   double best_global_evaluation = 0;
 
+  // the level of the node at which the best solution is found
+  //
+  int best_global_level = 0;
+
   // the tuple holding the best solution
   //
-  std::tuple<list<NODE> &, list<NODE> &, double &> best_solution;
+  std::tuple<vector<NODE> &, double &, int &> best_solution;
 
 public:
 
   TREE () :
       alpha (0), beta (0), best_solution (
-	  std::tie (best_current_solution, best_estimated_solution,
-		    best_global_evaluation)) {};
+	  std::tie (best_global_branch, best_global_evaluation, best_global_level))
+  {};
 
   void
   build_solution (const char *argv, vector<PIEZA> &p);
@@ -379,7 +379,7 @@ public:
 
   // return the best solution
   //
-  inline const std::tuple<list<NODE> &, list<NODE> &, double &>&
+  inline const std::tuple<vector<NODE> &, double &, int &>&
   getBestSolution () const
   {
     return best_solution;

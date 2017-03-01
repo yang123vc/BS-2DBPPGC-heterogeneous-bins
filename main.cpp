@@ -12,7 +12,10 @@
 
 #define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
 
-//Declaración de funciones necesarias
+//
+// Declaración de funciones necesarias
+//
+
 vector<PIEZA>
 read_pieces (char *name);
 
@@ -20,142 +23,111 @@ bool
 orden_area (PIEZA i, PIEZA j);
 
 void
-PrintSolution (char *instance_name, TREE &bs_sol, double runtime, double &A);
+dibujar_nodes (vector<NODE> &bins, char *instance, char *name, double t,
+	       int escalado);
 
-void
-print_best_solution (const std::tuple<list<NODE> &, list<NODE> &, double &> &);
-
-void
-PrintTree (char *instance_name, TREE &bs_sol, double runtime);
-
-// dos argumentos el archivo de los Beans
+// dos argumentos el archivo de los Beans y el *.dat
 //
 int
 main (int argc, const char * argv[])
 {
-
-//    char path[1024];
-//    uint32_t size = sizeof(path);
-//    if (_NSGetExecutablePath(path, &size) == 0)
-//        printf("executable path is %s\n", path);
-//    else
-//        printf("buffer too small; need size %u\n", size);
-
-  ofstream fp;
-
-  fp.open ("Results.txt", ios_base::app);
-  if (!fp.is_open ())
-    {
-      cout << "ERROR: Unable to open Results file\n";
-      exit (1);
-    }
-
   for (int k = 2; k < argc; k++) //For all instances.
     {
-      // Reads instance name
       //
+      // reading instance name
+      //
+
       char instance_name[120];
       strcpy (instance_name, argv[k]);
 
-      // Read pieces
       //
+      // reading pieces
+      //
+
       vector<PIEZA> item;
       item = read_pieces (instance_name);
 
-      //============================
-      // Order pieces
-      // By area
       //
+      // ordering pieces by area
+      //
+
       sort (item.begin (), item.end (), orden_area);
       double AreaPz = 0;
       for (int i = 0; i < item.size (); i++)
-	AreaPz = AreaPz + item[i].getArea ();
+	{
+	  AreaPz = AreaPz + item[i].getArea ();
+	}
 
-      //============================
+      //
+      // computing solution (with time measure)
+      //
+
       TREE bs_sol;
+
       clock_t start = clock ();
       bs_sol.build_solution (argv[1], item);
       clock_t finish = clock ();
-      double runtime = (finish - start) / CLOCKS_PER_MS; //Running time in milliseconds.
-      runtime = runtime / 1000; //Running time in seconds, without loosing precission.
 
-      // Print solution
-      //===================================================
-      PrintSolution (instance_name, bs_sol, runtime, AreaPz);
-//    PrintTree(instance_name,bs_sol, runtime);
-      print_best_solution(bs_sol.getBestSolution());
-      //===================================================
+      // running time in milliseconds.
+      //
+      double runtime = (finish - start) / CLOCKS_PER_MS;
 
-      //Identify solution node
-      //======================
-      list<NODE>::iterator it_child;
-      list<NODE> tree;
-      tree = bs_sol.get_tree ();
-      it_child = tree.end ();
-      it_child--;
-      int bestID = -1;
-      double bestUsage = -GRANDE;
-      while (it_child != tree.begin ())
+      // running time in seconds, without loosing precision.
+      //
+      runtime = runtime / 1000;
+
+      //
+      // solution information
+      //
+
+      const std::tuple<vector<NODE> &, double &, int &> &best_solution =
+            	  bs_sol.getBestSolution ();
+
+      vector<NODE> &solution_branch = std::get<0>(best_solution);
+      const double bestUsage = std::get<1>(best_solution);
+      const int level = std::get<2>(best_solution);
+      const int no_bins = solution_branch.size();
+
+      //
+      // printing solution to console
+      //
+
+      cout << endl;
+      cout << "Instance: " << instance_name << endl;
+      cout << "Level: " << level << endl;
+      cout << "Number of bins: " << no_bins << endl;
+      cout << "Bin Utilization: " << bestUsage << endl;
+      cout << "Running time: " << runtime << endl;
+
+      //
+      // printing solution to *.tex
+      //
+
+      dibujar_nodes (solution_branch, (char *) "SOL", instance_name, runtime,
+		     1);
+
+      //
+      // printing solution to *.txt
+      //
+
+      ofstream fp;
+      fp.open ("results.txt", ios_base::app);
+      if (!fp.is_open ())
 	{
-
-	  if (it_child->get_IDdisp ().empty ())
-	    {
-	      //Find %Utilization on that branch
-	      NODE branch;
-	      branch = *it_child;
-	      double AreaB = 0;
-	      int level = 0;
-	      while (branch.get_Pred () != NULL)
-		{
-		  //OF: %Utilization = Area Pzas /(Area Bins)
-		  AreaB = AreaB + branch.getL () * branch.getW ();
-		  //============================================
-		  branch = *branch.get_Pred ();
-		}
-	      double Util = AreaPz / AreaB;
-	      if (bestUsage < Util)
-		{
-		  //Keep the info for the branch with best OF
-		  bestUsage = Util;
-		  bestID = it_child->getID ();
-		}
-	    }
-	  it_child--;
+	  cerr << "Unable to open Results file" << endl;
+	  exit (1);
 	}
-
-      //Finding Bin Mix
-      it_child = tree.end ();
-      it_child--;
-      int no_bins = 0;
-      vector<string> bin_mix;
-      while (it_child != tree.begin ())
+      else
 	{
-	  if (it_child->getID () == bestID)
+	  fp << instance_name << "\t" << level << "\t" << no_bins << "\t"
+	      << bestUsage << "\t" << runtime << "\t" << "[ ";
+
+	  for (auto it = solution_branch.begin(); it < solution_branch.end(); ++it)
 	    {
-	      NODE child;
-	      child = *it_child;
-	      while (child.get_Pred () != NULL)    //While not at FATHER level
-		{
-		  string s = child.getSize ();
-		  bin_mix.push_back (s);
-		  child = *child.get_Pred ();
-		  no_bins++;
-		}
+	      fp << (*it).getSize() << " - ";
 	    }
-	  it_child--;
-
+	  fp << (*(--solution_branch.end())).getSize() << " ]" << endl;
 	}
-
-      cout << "\nInstance: " << instance_name << "\n";
-      cout << "Number of bins: " << no_bins << "\n";
-      cout << "Bin Utilization: " << bestUsage << "\n";
-      cout << "Running time: " << runtime << "\n";
-      fp << instance_name << "\t" << no_bins << "\t" << bestUsage << "\t"
-	  << runtime << "\t";
-      fp << "[ ";
-      for (int i = 0; i < bin_mix.size () - 1; i++)
-	fp << bin_mix[i] << " - ";
-      fp << bin_mix[bin_mix.size () - 1] << "]\n";
     }
   return 0;
 }

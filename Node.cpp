@@ -298,7 +298,7 @@ NODE::set_ID_pzas_disp (vector<PIEZA> &pz)
 }
 
 vector<int>
-NODE::get_IDdisp ()
+NODE::get_IDdisp () const
 {
   return ID_pzas_disp;
 }
