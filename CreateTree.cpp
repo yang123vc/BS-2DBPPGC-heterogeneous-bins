@@ -33,7 +33,7 @@ TREE::build_solution (const char *bin_filename, vector<PIEZA> &pzas)
   InitialNode.set_level (0);
   InitialNode.set_pred (*aaa);
   vector<PIEZA> pzas_avail;
-  double Amax = pzas[0].getArea (); //Área de la pza máxima.
+  double ApzaMax = pzas[0].getArea (); //Área de la pza máxima.
   pzas_avail = set_available_pzas (InitialNode, pzas);
   BS_tree.push_back (InitialNode);
   father = BS_tree.begin (); //Pointer the father node in the tree.
@@ -57,7 +57,7 @@ TREE::build_solution (const char *bin_filename, vector<PIEZA> &pzas)
       //Create NoChilds*NoRots*2 children and keep alpha best
       if (!pzas_avail.empty ())
 	create_child (bin_filename, No_Childs, No_Rots, *father, pzas_avail,
-		      Amax);
+		      ApzaMax);
       //=====================================
       int nodestot = 0;
       int l = 0;
@@ -133,28 +133,31 @@ double
 Local_of (NODE &node);
 
 bool
-TREE::local_eval (vector<NODE> &children, NODE &node, int types, double &Amax)
+TREE::local_eval (vector<NODE> &children, NODE &node, int types, double &ApzaMax)
 {
-  bool is_accepted = false;
-
-  if (children.empty ())
-    return true;
-
-  if (children.size () < alpha * types)
+    bool is_accepted = false;
+    //Local evaluation: suma [(Area de pza en bin)^2/Amax)]/Area bin.
+    //=================================================================
+    double ap = 0;
+    for (int i = 0; i < node.getPI ().size (); i++)
     {
-      is_accepted = true;
+        PIEZA p = *node.getPI ()[i];
+        double apot = pow (p.getArea (), 2);
+        ap = ap + apot; //Suma de potencias de áreas de pzas que están en el bin.
     }
-  //Local evaluation: suma [(Area de pza en bin)^2/Amax)]/Area bin.
-  //=================================================================
-  double ap = 0;
-  for (int i = 0; i < node.getPI ().size (); i++)
+    double area_node = node.getL () * node.getW ();
+//    double node_util = ap / (area_node * ApzaMax);
+    double node_util = ap / (area_node );
+    node.set_localevaluation (node_util);
+    //======================================================================
+    if (children.empty ())
     {
-      PIEZA p = *node.getPI ()[i];
-      ap = ap + pow (p.getArea (), 1.1); //Suma de cuadrados de áreas de pzas que están en el bin.
+        return true;
     }
-  double area_node = node.getL () * node.getW ();
-  double node_util = ap / (area_node * Amax);
-  node.set_localevaluation (node_util);
+    if (children.size () < alpha * types)
+    {
+        is_accepted = true;
+    }
   //==================================================================
   double worst_util = children[children.size () - 1].get_localevaluation ();
 
@@ -364,67 +367,72 @@ void
 KeepBestNodes (NODE &node_eval, vector<GE_COMP> &best_of, vector<int> &keep_id,
 	       vector<int>&no_pzas, int b)
 {
-  if (best_of.empty ())
+    if (best_of.empty ())
     {
-      GE_COMP gg;
-      gg.fractional_util = node_eval.get_globaleval ();
-      gg.prop_used_current_bin = node_eval.getPropUtil ();
-      keep_id.push_back (node_eval.getID ());
-      no_pzas.push_back ((node_eval.get_IDdisp ()).size ());
-      best_of.push_back (gg);
-//		best_of.push_back(node_eval.get_globaleval());
-//		keep_id.push_back(node_eval.getID());
-//		no_pzas.push_back((node_eval.get_IDdisp()).size());
-      return;
+        GE_COMP gg;
+        gg.fractional_util = node_eval.get_globaleval ();
+        gg.prop_used_current_bin = node_eval.getPropUtil ();
+        keep_id.push_back (node_eval.getID ());
+        no_pzas.push_back ((node_eval.get_IDdisp ()).size ());
+        best_of.push_back (gg);
+        //		best_of.push_back(node_eval.get_globaleval());
+        //		keep_id.push_back(node_eval.getID());
+        //		no_pzas.push_back((node_eval.get_IDdisp()).size());
+        return;
     }
-  bool is_accepted = false;
-  if (best_of.size () < b)
+    bool is_accepted = false;
+    if (best_of.size () < b)
     {
-      is_accepted = true;
+        is_accepted = true;
     }
-  //best_of vector is ordered in descending order of its utilization
-  GE_COMP node_of;
-  node_of.fractional_util = node_eval.get_globaleval ();
-  node_of.prop_used_current_bin = node_eval.getPropUtil ();
-  int pzas_disp_node = node_eval.get_IDdisp ().size ();
-  double b_of = best_of[best_of.size () - 1].fractional_util;
-  if (node_of.fractional_util >= b_of + PARAM_LAST_BIN)
-    {
-      is_accepted = true;
-    }
-  else
-    {
-      if (node_of.fractional_util >= b_of - PARAM_LAST_BIN
-	  && node_of.prop_used_current_bin
-	      < best_of[best_of.size () - 1].prop_used_current_bin - TOL2)
-	{
-	  is_accepted = true;
-	}
-    }
+    //best_of vector is ordered in descending order of its utilization
+    GE_COMP node_of;
+    node_of.fractional_util = node_eval.get_globaleval ();
+    node_of.prop_used_current_bin = node_eval.getPropUtil ();
+    int pzas_disp_node = node_eval.get_IDdisp ().size ();
+    int last_post = best_of.size () - 1;
+    double b_of = best_of[last_post].fractional_util;
+    
+    //Primer criterio de aceptación: Debe ser mayor que el peor aceptado en términos de su valor en la GE (más un parámetro para empates)
+    double aux1 = b_of + PARAM_LAST_BIN;
+    double aux2 =b_of - PARAM_LAST_BIN;
+    double aux3 = best_of[last_post].prop_used_current_bin - TOL2;
 
-  //Insert accepted node in descending order of its utilization
-  if (is_accepted)
+    if (node_of.fractional_util >= aux1)
     {
-      int pos = 0;
-      while ((pos < best_of.size () - 1
-	  && (node_of.fractional_util
-	      <= best_of[pos].fractional_util - PARAM_LAST_BIN))
-	  || (node_of.fractional_util
-	      <= best_of[pos].fractional_util + PARAM_LAST_BIN
-	      && node_of.prop_used_current_bin
-		  > best_of[pos].prop_used_current_bin
-	      && pos < best_of.size () - 1))
-	pos++;
-      best_of.insert (best_of.begin () + pos, node_of);
-      keep_id.insert (keep_id.begin () + pos, node_eval.getID ());
-      no_pzas.insert (no_pzas.begin () + pos, pzas_disp_node);
-      //Deleting non accepted nodes.
-      if (best_of.size () > b)
-	{
-	  best_of.pop_back ();
-	  keep_id.pop_back ();
-	  no_pzas.pop_back ();
-	}
+        is_accepted = true;
+    }
+    else
+    {
+        //Segundo Criterio: Aceptar nodo si su %Util es
+        if (node_of.fractional_util >=aux2
+            && node_of.prop_used_current_bin > aux3)//(9/3/17): estaba la comparación <
+        {
+            is_accepted = true;
+        }
+    }
+    
+    //Insert accepted node in descending order of the value obtained in the global evaluation (fractional_util), and in case of a tie, first node with best %Util
+    if (is_accepted)
+    {
+        int pos = 0;
+        while ((pos <= last_post && (node_of.fractional_util<= best_of[pos].fractional_util - PARAM_LAST_BIN))
+                || ((node_of.fractional_util<= best_of[pos].fractional_util + PARAM_LAST_BIN)
+                        && (node_of.prop_used_current_bin< best_of[pos].prop_used_current_bin)
+                        && (pos <= last_post)))
+        {
+            pos++;
+        }
+        best_of.insert (best_of.begin () + pos, node_of);
+        keep_id.insert (keep_id.begin () + pos, node_eval.getID ());
+        no_pzas.insert (no_pzas.begin () + pos, pzas_disp_node);
+        //Deleting non accepted nodes.
+        if (best_of.size () > b)
+        {
+            best_of.pop_back ();
+            keep_id.pop_back ();
+            no_pzas.pop_back ();
+        }
     }
 }
 

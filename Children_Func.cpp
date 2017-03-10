@@ -29,183 +29,183 @@ fill_node (NODE &current_bin, vector<PIEZA> &pzas);
 //Function that creates the children of a node.
 void
 TREE::create_child (const char *argv, int No_Childs, int No_Rots, NODE &father,
-		    vector<PIEZA> &pzas_disp, double &Amax)
+                    vector<PIEZA> &pzas_disp, double &ApzaMax)
 {
-  NODE current_node;
-  vector<NODE> children;
-  int bin = (father.get_level () + 1) * 100;
-  //Counting and storing different bin sizes
-  //========================================
-  int bsizes = 0;
-  string taux;
-  string cadena;
-  string line;
-  vector<string> btype;
-
-  ifstream b_file (argv);
-  if (!b_file.is_open ())
+    NODE current_node;
+    vector<NODE> children;
+    int bin = (father.get_level () + 1) * 100;
+    //Counting and storing different bin sizes
+    //========================================
+    int bsizes = 0;
+    string taux;
+    string cadena;
+    string line;
+    vector<string> btype;
+    
+    ifstream b_file (argv);
+    if (!b_file.is_open ())
     {
-      cout << "ERROR: Unable to open file " << argv << "\n";
-      exit (1);
+        cout << "ERROR: Unable to open file " << argv << "\n";
+        exit (1);
     }
-  getline (b_file, line); //'Size'  'L'  'W'
-  while (!b_file.eof ())
+    getline (b_file, line); //'Size'  'L'  'W'
+    while (!b_file.eof ())
     {
-      b_file >> cadena; //Reads type of bin.
-      taux = cadena;
-      btype.push_back (taux);
-      getline (b_file, line);
-      ++bsizes;
+        b_file >> cadena; //Reads type of bin.
+        taux = cadena;
+        btype.push_back (taux);
+        getline (b_file, line);
+        ++bsizes;
     }
-  //========================================
-  bool is_node_complete = false;
-  for (int t = 0; t < btype.size (); t++) //For each type of bin we create a node with the same initial piece
+    //========================================
+    bool is_node_complete = false;
+    for (int t = 0; t < btype.size (); t++) //For each type of bin we create a node with the same initial piece
     {
-      if (bin == (father.get_level () + 1) * 100) //First child node for this father
-	{
-	  current_node.initialize_node (argv, ++bin, btype[t]);
-	  current_node.set_ID_pzas_disp (pzas_disp);
-	}
-      else
-	{ //First child node for this bin type.
-	  current_node.setDim (argv, btype[t]); //Change dimensions of the bin
-	  current_node.IniWaste (); //Change waste of bin.
-	}
-      current_node.set_pred (father);
-      vector<double> try_rots;
-      //==========================================================
-      for (int i = 0; i < No_Childs; i++) //For each piece
-	{
-	  vector<PIEZA> pzas_c = pzas_disp; //Copia de las piezas
-	  bool is_symetric = false;
-	  for (int m = 0; m <= 1; m++) //For mirror
-	    {
-	      if (m == 1)
-		{
-		  is_symetric = pzas_c[i].set_mirror (true);
-		  try_rots.clear ();
-		}
-	      if (m == 1 && is_symetric)
-		continue;
-	      try_rots = calculate_rotations_FitNode (current_node, pzas_c[i],
-						      No_Rots, ALPHA);
-	      for (int r = 0; r < try_rots.size (); r++) //For each rotation
-		{
-		  is_symetric = pzas_c[i].obtener_rotacion (try_rots[r]);
-		  if (is_symetric && try_rots[r] != 0)
-		    continue; //Rotation does nothing, no point on trying to place it again.
-		  if (pzas_c[i].Fits_Bin (current_node.getL (),
-					  current_node.getW ()))
-		    {
-		      PIEZA p = pzas_c[i];
-		      current_node.include_piece (p); //Includes copy of pza[i] in node and eliminates its ID from the vector of available ID's.
-//    					printf("\nNODE %d:\n Piece %d, \n",current_node.getID(), p.getID());
-		      fill_node (current_node, pzas_c);
-		      bool is_node_child = false;
-		      is_node_complete = true;
-		      int type_bins = btype.size ();
-		      is_node_child = local_eval (children, current_node,
-						  type_bins, Amax);
-		      if (is_node_child)
-			{
-			  //Check that accepted node does not share any first piece with the existing nodes AND that there are exactly alpha nodes for each type bin.
-			  //===================================================
-			  //Check how many children there are of each type.
-			  vector<int> ctype (bsizes);
-			  for (int i = 0; i < children.size (); i++)
-			    {
-			      int count = 0;
-			      string btype_child = children[i].getSize ();
-			      while (btype_child.compare (btype[count]) != 0)
-				{
-				  count++;
-				}
-			      ctype[count]++;
-			    }
-			  //==================================================
-			  int t = 0;
-			  string btype_node = current_node.getSize ();
-			  PIEZA pza_node = *(current_node.getPI ())[0];
-			  while (btype[t].compare (btype_node) != 0)
-			    t++; //t stores the index of the bin type for the current node S=0, M=1, L=2...
-
-			  for (int i = 0; i < children.size (); i++)
-			    {
-			      PIEZA pza_child = *(children[i].getPI ())[0];
-			      string btype_child = children[i].getSize ();
-			      if (pza_child.getID () == pza_node.getID ()
-				  && btype_node.compare (btype_child) == 0)
-				{
-				  //If current node has better utilization, delete child
-				  if (current_node.get_localevaluation ()
-				      > children[i].get_localevaluation ())
-				    {
-				      //Delete child (same first piece as current node and worst utilization
-				      vector<NODE>::iterator it_ch;
-				      it_ch = children.begin ();
-				      it_ch = it_ch + i;
-				      children.erase (children.begin () + i);
-				    }
-				  else
-				    {
-				      is_node_child = false;
-				      break;                 //Skip to next node
-				    }
-				}
-			    }
-			  if (is_node_child)
-			    {
-			      if (children.empty ())
-				{
-				  current_node.set_level (
-				      father.get_level () + 1);
-				  children.push_back (current_node);
-				}
-			      else
-				{
-				  //Accept child and include it in descending order of their utilization toghether with those that have the same bin type
-				  int postp = 0;
-				  while (postp < children.size ()
-				      && children[postp].getSize ().compare (
-					  btype_node) != 0)
-				    postp++;
-				  int pos = postp;
-				  double node_util =
-				      current_node.getPropUtil ();
-				  while (pos < children.size ()
-				      && node_util
-					  <= children[pos].getPropUtil ())
-				    pos++;
-				  current_node.set_level (
-				      father.get_level () + 1);
-				  children.insert (children.begin () + pos,
-						   current_node);
-				  //Remove last child with type t if there is more than alpha
-				  if (ctype[t] == alpha)
-				    children.pop_back ();
-
-				  if (children.size () > alpha * bsizes)
-				    children.pop_back ();
-				}
-
-			    }
-
-			}
-		    }
-		  if (is_node_complete)               //Move to next child node.
-		    {
-		      //Empty node
-		      current_node.empty_bin ();
-		      //Create a new one.
-		      current_node.setID (++bin);
-		      current_node.set_ID_pzas_disp (pzas_c);
-		      current_node.set_pred (father);
-		      is_node_complete = false;
-		    }
-
-		}
-	    }
-	}
+        if (bin == (father.get_level () + 1) * 100) //First child node for this father
+        {
+            current_node.initialize_node (argv, ++bin, btype[t]);
+            current_node.set_ID_pzas_disp (pzas_disp);
+        }
+        else
+        { //First child node for this bin type.
+            current_node.setDim (argv, btype[t]); //Change dimensions of the bin
+            current_node.IniWaste (); //Change waste of bin.
+        }
+        current_node.set_pred (father);
+        vector<double> try_rots;
+        //==========================================================
+        for (int i = 0; i < No_Childs; i++) //For each piece
+        {
+            vector<PIEZA> pzas_c = pzas_disp; //Copia de las piezas
+            bool is_symetric = false;
+            for (int m = 0; m <= 1; m++) //For mirror
+            {
+                if (m == 1)
+                {
+                    is_symetric = pzas_c[i].set_mirror (true);
+                    try_rots.clear ();
+                }
+                if (m == 1 && is_symetric)
+                    continue;
+                try_rots = calculate_rotations_FitNode (current_node, pzas_c[i],
+                                                        No_Rots, ALPHA);
+                for (int r = 0; r < try_rots.size (); r++) //For each rotation
+                {
+                    is_symetric = pzas_c[i].obtener_rotacion (try_rots[r]);
+                    if (is_symetric && try_rots[r] != 0)
+                        continue; //Rotation does nothing, no point on trying to place it again.
+                    if (pzas_c[i].Fits_Bin (current_node.getL (),
+                                            current_node.getW ()))
+                    {
+                        PIEZA p = pzas_c[i];
+                        current_node.include_piece (p); //Includes copy of pza[i] in node and eliminates its ID from the vector of available ID's.
+                        //    					printf("\nNODE %d:\n Piece %d, \n",current_node.getID(), p.getID());
+                        fill_node (current_node, pzas_c);
+                        bool is_node_child = false;
+                        is_node_complete = true;
+                        int type_bins = btype.size ();
+                        is_node_child = local_eval (children, current_node,
+                                                    type_bins, ApzaMax);
+                        if (is_node_child)
+                        {
+                            //Check that accepted node does not share any first piece with the existing nodes AND that there are exactly alpha nodes for each type bin.
+                            //===================================================
+                            //Check how many children there are of each type.
+                            vector<int> ctype (bsizes);
+                            for (int i = 0; i < children.size (); i++)
+                            {
+                                int count = 0;
+                                string btype_child = children[i].getSize ();
+                                while (btype_child.compare (btype[count]) != 0)
+                                {
+                                    count++;
+                                }
+                                ctype[count]++;
+                            }
+                            //==================================================
+                            int t = 0;
+                            string btype_node = current_node.getSize ();
+                            PIEZA pza_node = *(current_node.getPI ())[0];
+                            while (btype[t].compare (btype_node) != 0)
+                                t++; //t stores the index of the bin type for the current node S=0, M=1, L=2...
+                            
+                            for (int i = 0; i < children.size (); i++)
+                            {
+                                PIEZA pza_child = *(children[i].getPI ())[0];
+                                string btype_child = children[i].getSize ();
+                                if (pza_child.getID () == pza_node.getID ()
+                                    && btype_node.compare (btype_child) == 0)
+                                {
+                                    //If current node has better utilization, delete child
+                                    if (current_node.get_localevaluation ()
+                                        > children[i].get_localevaluation ())
+                                    {
+                                        //Delete child (same first piece as current node and worst utilization
+                                        vector<NODE>::iterator it_ch;
+                                        it_ch = children.begin ();
+                                        it_ch = it_ch + i;
+                                        children.erase (children.begin () + i);
+                                    }
+                                    else
+                                    {
+                                        is_node_child = false;
+                                        break;                 //Skip to next node
+                                    }
+                                }
+                            }
+                            if (is_node_child)
+                            {
+                                if (children.empty ())
+                                {
+                                    current_node.set_level (
+                                                            father.get_level () + 1);
+                                    children.push_back (current_node);
+                                }
+                                else
+                                {
+                                    //Accept child and include it in descending order of their local evaluation.
+                                    int postp = 0;
+                                    while (postp < children.size ()
+                                           && children[postp].getSize ().compare (
+                                                                                  btype_node) != 0)
+                                        postp++;
+                                    int pos = postp;
+                                    double node_util =
+                                    current_node.get_localevaluation();
+                                    while (pos < children.size ()
+                                           && node_util
+                                           <= children[pos].get_localevaluation())
+                                        pos++;
+                                    current_node.set_level (
+                                                            father.get_level () + 1);
+                                    children.insert (children.begin () + pos,
+                                                     current_node);
+                                    //Remove last child with type t if there is more than alpha
+                                    if (ctype[t] == alpha)
+                                        children.pop_back ();
+                                    
+                                    if (children.size () > alpha * bsizes)
+                                        children.pop_back ();
+                                }
+                                
+                            }
+                            
+                        }
+                    }
+                    if (is_node_complete)               //Move to next child node.
+                    {
+                        //Empty node
+                        current_node.empty_bin ();
+                        //Create a new one.
+                        current_node.setID (++bin);
+                        current_node.set_ID_pzas_disp (pzas_c);
+                        current_node.set_pred (father);
+                        is_node_complete = false;
+                    }
+                    
+                }
+            }
+        }
     }
   for (int i = 0; i < children.size (); i++)
     {

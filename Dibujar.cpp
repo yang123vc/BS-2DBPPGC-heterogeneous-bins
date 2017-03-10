@@ -11,7 +11,7 @@ NUMERO
 redondear_numero_dos_cifras (double num);
 
 void
-dibujar_nodes (vector<NODE> &node, char *instance, char *name, double t,
+dibujar_nodes (vector<NODE> &node, char *instance, char *name, double t, double usage,
 	       int escalado)
 {
   char filename[80];
@@ -203,8 +203,7 @@ dibujar_nodes (vector<NODE> &node, char *instance, char *name, double t,
   sprintf (cadena, "\n \\noindent Total Number of Bins: %lu", node.size ());
   fprintf (p_file, "%s \n", cadena);
   cadena[0] = '\0';
-  double usage = node.size () - 1 + (node.end () - 1)->getPropUtil ();
-  sprintf (cadena, "\n \\noindent Fractional Bin Usage: %.3f", usage);
+    sprintf (cadena, "\n \\noindent Usage: %.3f", usage);
   fprintf (p_file, "%s \n", cadena);
   cadena[0] = '\0';
 
@@ -404,9 +403,8 @@ dibujar_nodes (vector<NODE> &node, char *instance, char *name, double t,
       fprintf (p_file, "%s \n", cadena);
       cadena[0] = '\0';
 
-      sprintf (cadena, "\\caption{BIN %d - Size %s- USAGE %2lf}", n->getID (),
+      sprintf (cadena, "\\caption{Size %s- USAGE %2lf}",
 	       n->getSize ().c_str (), n->getPropUtil ());
-      //sprintf (cadena,"\\caption{\\ddmmyydate  \\today (\\currenttime)}");
       fprintf (p_file, "%s \n", cadena);
       cadena[0] = '\0';
 

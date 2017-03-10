@@ -32,7 +32,7 @@
 #define THRES2 0.8 //This is the acceptance threshold for placing a piece in the candidate list. We have different thresholds, because the final acceptance criterion is based in convex hull utilization, and maybe by matching a "not so good" edge gives better utilization. In any case it will always try the edge with the max matching distance, so wer are only allowing for more tests to be made.
 
 #define slide_ep 10//This value we will have to explore as I don't have a clue on how much to slide a piece along other piece...
-#define PARAM_LAST_BIN 0.05 //We will try with 0.2, 0.1, 0.05 y 0.01
+#define PARAM_LAST_BIN 0.0 //We will try with 0.2, 0.1, 0.05 y 0.01 //Not sure about it. 
 
 using namespace std;
 //Para no tener que repetir siempre std:: con los comandos standar
@@ -43,9 +43,9 @@ using std::vector;
 class GE_COMP
 {
 public:
-  double fractional_n_bins;
   double fractional_util;
   double prop_used_current_bin;
+//  double fractional_n_bins;
 };
 
 //PUNTO
