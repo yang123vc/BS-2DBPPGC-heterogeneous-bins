@@ -17,8 +17,8 @@ StoppingCriteria (list<NODE>::iterator &father, list<NODE> &tree);
 void
 LastBinRefinement (list<NODE> &BS_tree);
 
-//Main function. This Function creates the whole tree.
-
+// Main function. This Function creates the whole tree.
+//
 void
 TREE::build_solution (const char *bin_filename, vector<PIEZA> &pzas)
 {
