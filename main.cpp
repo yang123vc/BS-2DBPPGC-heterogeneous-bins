@@ -22,8 +22,8 @@ bool
 orden_area (PIEZA i, PIEZA j);
 
 void
-dibujar_nodes (vector<NODE> &bins, char *instance, char *name, double t, double usage,
-	       int escalado);
+dibujar_nodes (vector<NODE> &bins, char *instance, char *name, double t,
+	       double usage, int escalado);
 
 // dos argumentos el archivo de los Beans y el *.dat
 //
@@ -102,8 +102,8 @@ main (int argc, const char * argv[])
       // printing solution to *.tex
       //
 
-      dibujar_nodes (solution_branch, (char *) "SOL", instance_name, runtime, bestUsage,
-		     1);
+      dibujar_nodes (solution_branch, (char *) "SOL", instance_name, runtime,
+		     bestUsage, 1);
 
       //
       // printing solution to *.txt
