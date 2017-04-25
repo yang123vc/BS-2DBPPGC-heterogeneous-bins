@@ -121,7 +121,8 @@ main (int argc, const char * argv[])
 	  fp << instance_name << "\t" << level << "\t" << no_bins << "\t"
 	      << bestUsage << "\t" << runtime << "\t" << "[ ";
 
-	  for (auto it = solution_branch.begin(); it < solution_branch.end(); ++it)
+	  for (auto it = solution_branch.begin (); it < solution_branch.end ();
+	      ++it)
 	    {
 	      fp << (*it).getSize() << " - ";
 	    }
