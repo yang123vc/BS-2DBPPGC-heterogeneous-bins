@@ -44,6 +44,7 @@ TREE::build_solution (const char *bin_filename, vector<PIEZA> &pzas)
     {
       int No_Childs = 10; //Number of different first pieces
       int No_Rots = 3; //  2 (rotations of first piece) * 2 (Mirror(Yes / No))
+
       //Find available pieces for child nodes.
       pzas_avail = set_available_pzas (*father, pzas);
       if (pzas_avail.empty () && father->getOpen ()) //If there is no more pieces available for that father, close it, and move to the next one.
@@ -53,12 +54,14 @@ TREE::build_solution (const char *bin_filename, vector<PIEZA> &pzas)
 	}
       if (pzas_avail.size () < No_Childs && !pzas_avail.empty ())
 	No_Childs = pzas_avail.size (); //If less than NoChilds available pieces, recalculate.
+
       //=====================================
       //Create NoChilds*NoRots*2 children and keep alpha best
       if (!pzas_avail.empty ())
 	create_child (bin_filename, No_Childs, No_Rots, *father, pzas_avail,
 		      ApzaMax);
       //=====================================
+
       int nodestot = 0;
       int l = 0;
       while (nodestot < beta)
@@ -133,30 +136,32 @@ double
 Local_of (NODE &node);
 
 bool
-TREE::local_eval (vector<NODE> &children, NODE &node, int types, double &ApzaMax)
+TREE::local_eval (vector<NODE> &children, NODE &node, int types,
+		  double &ApzaMax)
 {
-    bool is_accepted = false;
-    //Local evaluation: suma [(Area de pza en bin)^2/Amax)]/Area bin.
-    //=================================================================
-    double ap = 0;
-    for (int i = 0; i < node.getPI ().size (); i++)
+  bool is_accepted = false;
+
+  //Local evaluation: suma [(Area de pza en bin)^2/Amax)]/Area bin.
+  //=================================================================
+  double ap = 0;
+  for (int i = 0; i < node.getPI ().size (); i++)
     {
-        PIEZA p = *node.getPI ()[i];
-        double apot = pow (p.getArea (), 2);
-        ap = ap + apot; //Suma de potencias de áreas de pzas que están en el bin.
+      PIEZA p = *node.getPI ()[i];
+      double apot = pow (p.getArea (), 2);
+      ap = ap + apot; //Suma de potencias de áreas de pzas que están en el bin.
     }
-    double area_node = node.getL () * node.getW ();
+  double area_node = node.getL () * node.getW ();
 //    double node_util = ap / (area_node * ApzaMax);
-    double node_util = ap / (area_node );
-    node.set_localevaluation (node_util);
-    //======================================================================
-    if (children.empty ())
+  double node_util = ap / (area_node);
+  node.set_localevaluation (node_util);
+  //======================================================================
+  if (children.empty ())
     {
-        return true;
+      return true;
     }
-    if (children.size () < alpha * types)
+  if (children.size () < alpha * types)
     {
-        is_accepted = true;
+      is_accepted = true;
     }
   //==================================================================
   double worst_util = children[children.size () - 1].get_localevaluation ();
@@ -175,7 +180,6 @@ TREE::local_eval (vector<NODE> &children, NODE &node, int types, double &ApzaMax
 	  {
 	    if (node.getNumPiezas () <= children[i].getNumPiezas ()) //Keep node with more pieces in it.
 	      is_accepted = false;
-
 	  }
       }
   return is_accepted;

@@ -59,7 +59,7 @@ TREE::create_child (const char *argv, int No_Childs, int No_Rots, NODE &father,
     }
     //========================================
     bool is_node_complete = false;
-    for (int t = 0; t < btype.size (); t++) //For each type of bin we create a node with the same initial piece
+    for (int t = 0; t < btype.size (); t++) // For each type of bin we create a node with the same initial piece
     {
         if (bin == (father.get_level () + 1) * 100) //First child node for this father
         {
@@ -108,9 +108,11 @@ TREE::create_child (const char *argv, int No_Childs, int No_Rots, NODE &father,
                                                     type_bins, ApzaMax);
                         if (is_node_child)
                         {
-                            //Check that accepted node does not share any first piece with the existing nodes AND that there are exactly alpha nodes for each type bin.
-                            //===================================================
-                            //Check how many children there are of each type.
+                            // Check that accepted node does not share any first
+                            // piece with the existing nodes AND that there are
+                            // exactly alpha nodes for each type bin.
+                            // =================================================
+                            // Check how many children there are of each type.
                             vector<int> ctype (bsizes);
                             for (int i = 0; i < children.size (); i++)
                             {
@@ -122,7 +124,7 @@ TREE::create_child (const char *argv, int No_Childs, int No_Rots, NODE &father,
                                 }
                                 ctype[count]++;
                             }
-                            //==================================================
+                            // =================================================
                             int t = 0;
                             string btype_node = current_node.getSize ();
                             PIEZA pza_node = *(current_node.getPI ())[0];
