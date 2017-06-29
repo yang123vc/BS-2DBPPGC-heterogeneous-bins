@@ -9,15 +9,15 @@
 #include "classes_BPGC_HetBins.h"
 
 void
-dibujar_nodes (vector<NODE> &bins, char *instance, char *name, double t, double u,
-	       int escalado);
+dibujar_nodes (vector<NODE> &bins, char *instance, char *name, double t,
+	       double u, int escalado);
 
 void
 PrintSolution (char *instance_name, const list<NODE> &tree, double runtime,
 	       double &AreaPz)
 {
   list<NODE>::const_iterator it_child;
-  it_child = tree.end();
+  it_child = tree.end ();
   it_child--;
 
   //======================
@@ -71,7 +71,8 @@ PrintSolution (char *instance_name, const list<NODE> &tree, double runtime,
 	  reverse (branch_sol.begin (), branch_sol.end ());
 	  char name[200];
 	  sprintf (name, "SOL");
-	  dibujar_nodes (branch_sol, name, instance_name, runtime, bestUsage, 1);
+	  dibujar_nodes (branch_sol, name, instance_name, runtime, bestUsage,
+			 1);
 	}
       it_child--;
     }

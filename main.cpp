@@ -80,12 +80,12 @@ main (int argc, const char * argv[])
       //
 
       const std::tuple<vector<NODE> &, double &, int &> &best_solution =
-            	  bs_sol.getBestSolution ();
+	  bs_sol.getBestSolution ();
 
-      vector<NODE> &solution_branch = std::get<0>(best_solution);
-      const double bestUsage = std::get<1>(best_solution);
-      const int level = std::get<2>(best_solution);
-      const int no_bins = solution_branch.size();
+      vector<NODE> &solution_branch = std::get<0> (best_solution);
+      const double bestUsage = std::get<1> (best_solution);
+      const int level = std::get<2> (best_solution);
+      const int no_bins = solution_branch.size ();
 
       //
       // printing solution to console
@@ -125,9 +125,9 @@ main (int argc, const char * argv[])
 	  auto it_last = --solution_branch.end ();
 	  while (it < it_last)
 	    {
-	      fp << (*(it++)).getSize() << " - ";
+	      fp << (*(it++)).getSize () << " - ";
 	    }
-	  fp << (*it).getSize() << " ]" << endl;
+	  fp << (*it).getSize () << " ]" << endl;
 	}
     }
   return 0;

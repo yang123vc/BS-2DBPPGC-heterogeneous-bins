@@ -355,8 +355,11 @@ public:
 
   TREE () :
       alpha (0), beta (0), best_solution (
-	  std::tie (best_global_branch, best_global_evaluation, best_global_level))
-  {};
+	  std::tie (best_global_branch, best_global_evaluation,
+		    best_global_level))
+  {
+  }
+  ;
 
   void
   build_solution (const char *argv, vector<PIEZA> &p);

@@ -147,29 +147,29 @@ NODE::getPI ()
 void
 NODE::empty_bin ()
 {
-    for (int i = 0; i < num_piezas; i++)
+  for (int i = 0; i < num_piezas; i++)
     {
-        piezas_incluidas[i].setID (-1);
-        piezas_incluidas[i].setbin (-1);
-        piezas_incluidas[i].set_mirror (false);
-        piezas_incluidas[i].set_placed (false);
-        piezas_incluidas[i].clear_points ();
+      piezas_incluidas[i].setID (-1);
+      piezas_incluidas[i].setbin (-1);
+      piezas_incluidas[i].set_mirror (false);
+      piezas_incluidas[i].set_placed (false);
+      piezas_incluidas[i].clear_points ();
     }
-    num_piezas = 0;
-    ID = -1;
-    //L_used = 0;
-    //W_used = 0;
-    waste = L * W;
-    prop_utilizada = 0;
-    local_eval = 0;
-    global_eval = 0;
-    //piezas_incluidas.clear();
-    section.clear ();
-    GC.clear ();
-    ID_pzas_disp.clear ();
-    num_sect = 0;
-    bin_open = true;
-    predecessor = nullptr;
+  num_piezas = 0;
+  ID = -1;
+  //L_used = 0;
+  //W_used = 0;
+  waste = L * W;
+  prop_utilizada = 0;
+  local_eval = 0;
+  global_eval = 0;
+  //piezas_incluidas.clear();
+  section.clear ();
+  GC.clear ();
+  ID_pzas_disp.clear ();
+  num_sect = 0;
+  bin_open = true;
+  predecessor = nullptr;
 }
 
 void
@@ -221,7 +221,7 @@ NODE::getNumSect ()
 }
 
 void
-NODE::update_section (IRR_BIN &ib)//This function adds the pieces that are included in the irregular bin but not in the section of the bin.
+NODE::update_section (IRR_BIN &ib) //This function adds the pieces that are included in the irregular bin but not in the section of the bin.
 {
   vector<PIEZA*> *pi = ib.get_pzas ();	//pieces in the irregular bin
   int i = 0;

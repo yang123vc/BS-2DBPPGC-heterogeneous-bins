@@ -11,8 +11,8 @@ NUMERO
 redondear_numero_dos_cifras (double num);
 
 void
-dibujar_nodes (vector<NODE> &node, char *instance, char *name, double t, double usage,
-	       int escalado)
+dibujar_nodes (vector<NODE> &node, char *instance, char *name, double t,
+	       double usage, int escalado)
 {
   char filename[80];
   FILE *p_file;
@@ -203,7 +203,7 @@ dibujar_nodes (vector<NODE> &node, char *instance, char *name, double t, double 
   sprintf (cadena, "\n \\noindent Total Number of Bins: %lu", node.size ());
   fprintf (p_file, "%s \n", cadena);
   cadena[0] = '\0';
-    sprintf (cadena, "\n \\noindent Usage: %.3f", usage);
+  sprintf (cadena, "\n \\noindent Usage: %.3f", usage);
   fprintf (p_file, "%s \n", cadena);
   cadena[0] = '\0';
 
@@ -403,8 +403,8 @@ dibujar_nodes (vector<NODE> &node, char *instance, char *name, double t, double 
       fprintf (p_file, "%s \n", cadena);
       cadena[0] = '\0';
 
-      sprintf (cadena, "\\caption{Size %s- USAGE %2lf}",
-	       n->getSize ().c_str (), n->getPropUtil ());
+      sprintf (cadena, "\\caption{Size %s- USAGE %2lf}", n->getSize ().c_str (),
+	       n->getPropUtil ());
       fprintf (p_file, "%s \n", cadena);
       cadena[0] = '\0';
 

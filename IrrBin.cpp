@@ -1,131 +1,150 @@
-
 #include"classes_BPGC_HetBins.h"
 
 //===============================================
 //Funciones asociadas a la clase IRR_BIN
 //===============================================
-void IRR_BIN::set_ID(int i)
+void
+IRR_BIN::set_ID (int i)
 {
-	ID = i;
+  ID = i;
 }
-int IRR_BIN::getID()
+int
+IRR_BIN::getID ()
 {
-	return ID;
-};
-
-void IRR_BIN::setBin(int b)
-{
-	binID = b;
+  return ID;
 }
+;
 
-void IRR_BIN::setArea()
+void
+IRR_BIN::setBin (int b)
 {
-	area_ib =calcular_area_exacta(ib_ptos);
-	//reverse ptos, dado que la función anterior está diseñada para polígonos en sentido antihorario, por lo que en este caso hace un reverse de los ptos. 
-	std::reverse(ib_ptos.begin(),ib_ptos.end());
-
+  binID = b;
 }
 
-double IRR_BIN::getArea()
+void
+IRR_BIN::setArea ()
 {
-	return area_ib;
+  area_ib = calcular_area_exacta (ib_ptos);
+  //reverse ptos, dado que la función anterior está diseñada para polígonos en sentido antihorario, por lo que en este caso hace un reverse de los ptos. 
+  std::reverse (ib_ptos.begin (), ib_ptos.end ());
+
 }
 
-void IRR_BIN::set_waste(PIEZA &p)
+double
+IRR_BIN::getArea ()
 {
-	double area_p = p.getArea();
-	waste_ib = area_ib - area_p;
-}
-double IRR_BIN::get_waste()
-{
-	return waste_ib;
-}
-double IRR_BIN::get_prop_used()
-{
-	return prop_used;
+  return area_ib;
 }
 
-void IRR_BIN::set_prop_used()
+void
+IRR_BIN::set_waste (PIEZA &p)
 {
-	prop_used = 1 - waste_ib/area_ib;
+  double area_p = p.getArea ();
+  waste_ib = area_ib - area_p;
+}
+double
+IRR_BIN::get_waste ()
+{
+  return waste_ib;
+}
+double
+IRR_BIN::get_prop_used ()
+{
+  return prop_used;
 }
 
-void IRR_BIN::update_waste()
+void
+IRR_BIN::set_prop_used ()
 {
-    double tot_pz_area=0;
-    for(int i =0;i<ib_pzas.size();i++)
-        tot_pz_area = tot_pz_area + ib_pzas[i]->getArea();
-    waste_ib = area_ib - tot_pz_area;
+  prop_used = 1 - waste_ib / area_ib;
 }
 
-int IRR_BIN::getBin()
+void
+IRR_BIN::update_waste ()
 {
-	return binID;
+  double tot_pz_area = 0;
+  for (int i = 0; i < ib_pzas.size (); i++)
+    tot_pz_area = tot_pz_area + ib_pzas[i]->getArea ();
+  waste_ib = area_ib - tot_pz_area;
 }
 
-void IRR_BIN::add_points(PUNTO &pto)
+int
+IRR_BIN::getBin ()
 {
-	ib_ptos.push_back(pto);
+  return binID;
 }
 
-vector<PUNTO> *IRR_BIN::get_ptos()
+void
+IRR_BIN::add_points (PUNTO &pto)
 {
-	return &ib_ptos;
-};
-
-vector<PIEZA*> *IRR_BIN::get_pzas()
-{
-	return (&ib_pzas);
+  ib_ptos.push_back (pto);
 }
 
-void IRR_BIN::add_GC(EDGES &e)
+vector<PUNTO> *
+IRR_BIN::get_ptos ()
 {
-	ib_GC.push_back(e);
+  return &ib_ptos;
+}
+;
+
+vector<PIEZA*> *
+IRR_BIN::get_pzas ()
+{
+  return (&ib_pzas);
 }
 
-
-vector<EDGES> *IRR_BIN::get_ibGC()
+void
+IRR_BIN::add_GC (EDGES &e)
 {
-	return (&ib_GC);
+  ib_GC.push_back (e);
 }
 
-void IRR_BIN::add_piece(PIEZA &pza)
+vector<EDGES> *
+IRR_BIN::get_ibGC ()
 {
-	//Incluimos pieza p en el bin (i.e. aumentamos en uno el número de piezas e incluimos la pieza en el vector piezas_incluidas.
-	ib_pzas.push_back(&pza);
-	//Actualizar largo y ancho utilizado y waste;
-	set_waste(pza);
-	set_prop_used();
+  return (&ib_GC);
 }
 
-void IRR_BIN::empty_irrbin()
+void
+IRR_BIN::add_piece (PIEZA &pza)
 {
-	ID = -1;
-	binID= -1;
-	prop_used = 0;
-	ib_pzas.clear();
-	ib_ptos.clear();
-	ib_angles.clear();
-	ib_GC.clear();
+  //Incluimos pieza p en el bin (i.e. aumentamos en uno el número de piezas e incluimos la pieza en el vector piezas_incluidas.
+  ib_pzas.push_back (&pza);
+  //Actualizar largo y ancho utilizado y waste;
+  set_waste (pza);
+  set_prop_used ();
 }
 
-vector<double> IRR_BIN::get_angles()
+void
+IRR_BIN::empty_irrbin ()
 {
-	vector<EDGES> ar;
-	EDGES aux;
-	int last = ib_ptos.size();
-	//Create edges of IRRBIN
-	for(int i = 0; i<last; i++)
-		{
-		aux.ini = ib_ptos[i];
-		if(i+1!= last) aux.fin = ib_ptos[i+1];
-		else aux.fin = ib_ptos[0];
-		aux.set_mod();
-		ar.push_back(aux);
-		}
-	ib_angles =  calculateInnerAngles(ar);
-	return ib_angles;
+  ID = -1;
+  binID = -1;
+  prop_used = 0;
+  ib_pzas.clear ();
+  ib_ptos.clear ();
+  ib_angles.clear ();
+  ib_GC.clear ();
 }
 
-
+vector<double>
+IRR_BIN::get_angles ()
+{
+  vector<EDGES> ar;
+  EDGES aux;
+  int last = ib_ptos.size ();
+  //Create edges of IRRBIN
+  for (int i = 0; i < last; i++)
+    {
+      aux.ini = ib_ptos[i];
+      if (i + 1 != last)
+	aux.fin = ib_ptos[i + 1];
+      else
+	aux.fin = ib_ptos[0];
+      aux.set_mod ();
+      ar.push_back (aux);
+    }
+  ib_angles = calculateInnerAngles (ar);
+  return ib_angles;
+}
 
