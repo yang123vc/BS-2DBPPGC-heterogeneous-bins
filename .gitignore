@@ -30,6 +30,8 @@
 *.exe
 *.out
 *.app
+
+# Eclipse IDE
 /Debug/
 /Default/
 /.cproject
