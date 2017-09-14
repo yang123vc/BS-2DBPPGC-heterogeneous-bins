@@ -32,3 +32,5 @@
 *.app
 /Debug/
 /Default/
+/.cproject
+/.project
